@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import re
-import logging
-
-from collections import OrderedDict
 import argparse as argparse
+import logging
+import re
+import sys
+from collections import OrderedDict
 
 import jinja2 as jinja2
 
@@ -61,8 +59,6 @@ class NMonHtmlConverter:
     def proc_file(self):
         result_var = OrderedDict()
         time_key = 'title'
-        net_count = 0
-        net_acount = list()
         with open(self.file) as lines:
             for line in lines:
                 line = line.rstrip()
@@ -124,8 +120,8 @@ class NMonHtmlConverter:
                                 self.logger.debug("grp2 " + str(m.group(2)))
                                 if time_key != "title" and 'title' not in result_var[m.group(1)]:
                                     result_var[m.group(1)]['title'] = {'order': m.group(2),
-                                                                        'values': m.group(3).split(",")
-                                                                        }
+                                                                       'values': m.group(3).split(",")
+                                                                       }
                                 else:
                                     result_var[m.group(1)][time_key] = {'order': m.group(2),
                                                                         'values': m.group(3).split(",")
@@ -139,7 +135,8 @@ class NMonHtmlConverter:
     ####
     # this is just a helper for the jinja template
     ##
-    def m(self, regex, text):
+    @staticmethod
+    def m(regex, text):
         if re.match(regex, text):
             return True
         return False
@@ -171,4 +168,3 @@ if __name__ == '__main__':
             fd.write(outputText)
     else:
         print(outputText)
-
