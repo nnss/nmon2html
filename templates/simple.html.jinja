@@ -1,0 +1,351 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report generator for NMON</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script
+            src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+            integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI="
+            crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src='https://code.highcharts.com/highcharts.js'></script>
+    <script src='https://code.highcharts.com/modules/data.js'></script>
+    <script src='https://code.highcharts.com/modules/exporting.js'></script>
+    <script src="https://code.highcharts.com/modules/offline-exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+
+    <script content="text/javascript">
+        function assignDiv(id) {
+            document.querySelectorAll('.page').forEach(function (el) {
+                el.style.display = 'none';
+            });
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function codeAddress() {
+            document.querySelectorAll('.page').forEach(function (el) {
+                el.style.display = 'none';
+            });
+            document.getElementById('welcome').style.display = 'block';
+        }
+
+        window.onload = codeAddress;
+
+    </script>
+    <style>
+        .rounded-corner {
+            font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif, serif;
+            width: 480px;
+            text-align: left;
+            border-collapse: collapse;
+            margin: 20px;
+        }
+
+        .rounded-corner thead th {
+            font-weight: normal;
+            color: #9ba8f8;
+            background: #07263d;
+            padding: 8px;
+        }
+
+        .rounded-corner td {
+            background: #6999c4;
+            border-top: 1px solid #aad1ee;
+            color: #000000;
+            padding: 8px;
+        }
+
+        .rounded-corner tfoot td {
+            background: #e8edff;
+        }
+
+        .rounded-corner tfoot td {
+            background: #e8edff;
+        }
+
+        .rounded-corner tbody tr:hover td {
+            background: #d0dafd;
+        }
+
+        table tr:first-child th:first-child, table.Info tr:first-child td:first-child {
+            border-top-left-radius: 16px;
+        }
+
+        table tr:first-child th:last-child, table.Info tr:first-child td:last-child {
+            border-top-right-radius: 16px;
+        }
+
+        table tr:last-child td:first-child {
+            border-bottom-left-radius: 16px;
+        }
+
+        table tr:last-child td:last-child {
+            border-bottom-right-radius: 16px;
+        }
+
+        #welcome {
+            margin: 15vw;
+            padding: 1em;
+        }
+
+        #welcome h1 {
+            color: #000;
+        }
+
+        page {
+            display: none;
+        }
+
+        .sidenav {
+            height: 100%;
+            width: 15em;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            padding-top: 20px;
+        }
+
+        .sidenav a {
+            padding: 6px 8px 6px 16px;
+            text-decoration: none;
+            color: #818181;
+            display: block;
+        }
+
+        .sidenav a:hover {
+            color: #f1f1f1;
+        }
+
+        .main {
+            margin-left: 25vw; /* Same as the width of the sidenav */
+            padding: 0 10px;
+        }
+
+        @media screen and (max-height: 450px) {
+            .sidenav {
+                padding-top: 15px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="sidenav">
+    {% for part in info %}
+        <a href="#" onClick="assignDiv('{{ part }}');">{{ part }}</a>
+    {% endfor %}
+</div>
+
+
+<div class="main">
+    <a id="top_page"></a>
+    {% for part in info.keys() %}
+        <div class="page" id="{{ part }}">
+            {% if meta.m(meta.skel['text'], part) %}
+                <h1>Part: {{ part }}</h1>
+                <ul>
+                    {% for k in info[part].keys() %}
+                        <li><a id="toc_{{ k }}" href="#ref_{{ k }}">{{ k }}</a></li>
+                    {% endfor %}
+                </ul>
+                {% for k in info[part].keys() %}
+                    <h2><a id="ref_{{ k }}" href="#toc_{{ k }}">{{ k }}</a></h2>
+                    <pre>
+{{ info[part][k] }}
+</pre>
+                {% endfor %}
+            {% elif meta.m(meta.skel['graph'], part) %}
+                <script type='text/javascript'>
+                    $(document).ready(function () {
+                        $('#datatable_{{ part }}').hide();
+                        $('#buttonsp_{{ part }}').click(function () {
+                            $('#datatable_{{ part }}').toggle();
+                            if ($('#buttonsp_{{ part }}').html() != 'hide table') {
+                                $('#buttonsp_{{ part }}').html('hide table');
+                            } else {
+                                $('#buttonsp_{{ part }}').html('show table');
+                            }
+                        });
+                        $('#container_{{ part }}').highcharts({
+                            data: {
+                                table: document.getElementById('datatable_{{ part }}'),
+                            },
+                            chart: {
+                                type: 'line',
+                                zoomType: 'x'
+                            },
+                            credits: {
+                                text: 'by Matias nnss Palomec',
+                                href: 'https://github.com/nnss/',
+                                style: {
+                                    color: '#07263d',
+                                    fontSize: '9px'
+                                }
+                            },
+                            legend: {
+                                enable: true
+                            },
+                            yAxis: {
+                                allowDecimals: true,
+                                title: {
+                                    text: 'percent'
+                                }
+                            },
+                            xAxis: {
+                                allowDecimals: true,
+                                title: {
+                                    text: 'dates'
+                                }
+                            },
+                            title: {
+                                text: '{{ part }}'
+                            },
+                        });
+                    });
+                </script>
+                <h1>{{ part }}</h1>
+                <div id='container_{{ part }}' style='min-width: 310px; height: 400px; margin: 0 auto'></div>
+                <div style='position: relative; left: 50%; width: 100%;'>
+                    <a class="btn btn-dark" id='buttonsp_{{ part }}'>show table</a>
+                </div>
+
+                <table id='datatable_{{ part }}' class='rounded-corner'>
+                    {% for row in info[part] %}
+                        {% if row == 'title' %}
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                {% for inrow in info[part][row]['values'] %}
+                                    <th>{{ inrow }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                        {% else %}
+                            <tr>
+                                <td>{{ row }}</td>
+                                {% for inrow in info[part][row]['values'] %}
+                                    <td>{{ inrow }}</td>
+                                {% endfor %}
+                            </tr>
+
+                        {% endif %}
+                    {% endfor %}
+                    </tbody>
+
+                </table>
+            {% elif meta.m(meta.skel['net'], part) %}
+                <script type='text/javascript'>
+                    $(document).ready(function () {
+                        $('#datatable_{{ part }}').hide();
+                        $('#buttonsp_{{ part }}').click(function () {
+                            $('#datatable_{{ part }}').toggle();
+                            if ($('#buttonsp_{{ part }}').html() != 'hide table') {
+                                $('#buttonsp_{{ part }}').html('hide table');
+                            } else {
+                                $('#buttonsp_{{ part }}').html('show table');
+                            }
+                        });
+                        $('#container_{{ part }}').highcharts({
+                            data: {
+                                table: document.getElementById('datatable_{{ part }}'),
+                            },
+                            chart: {
+                                type: 'areaspline',
+                                zoomType: 'x'
+                            },
+                            plotOptions: {
+                                areaspline: {
+                                    fillOpacity: 0.5
+                                }
+                            },
+                            credits: {
+                                text: 'by Matias nnss Palomec',
+                                href: 'https://github.com/nnss/',
+                                style: {
+                                    color: '#07263d',
+                                    fontSize: '9px'
+                                }
+                            },
+                            legend: {
+                                enable: true
+                            },
+                            yAxis: {
+                                allowDecimals: true,
+                                plotLines: [{
+                                    value: 0,
+                                    color: '#ff0000',
+                                    width: 4,
+                                    zIndex: 4,
+                                }],
+
+                                title: {
+                                    text: 'percent'
+                                }
+                            },
+                            xAxis: {
+                                allowDecimals: true,
+
+                                title: {
+                                    text: 'dates'
+                                }
+                            },
+                            title: {
+                                text: '{{ part }}'
+                            },
+                        });
+                    });
+                </script>
+                <h1>{{ part }}</h1>
+                <div id='container_{{ part }}' style='min-width: 310px; height: 400px; margin: 0 auto'></div>
+                <div style='position: relative; left: 50%; width: 100%;'>
+                    <a class="btn btn-dark" id='buttonsp_{{ part }}'>show table</a>
+                </div>
+
+                <table id='datatable_{{ part }}' class='rounded-corner'>
+                    {% for row in info[part] %}
+                        {% if row == 'title' %}
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                {% for inrow in info[part][row]['values'] %}
+                                    <th>{{ inrow }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                        {% else %}
+                            <tr>
+                                <td>{{ row }}</td>
+                                {% for inrow in info[part][row]['values'] %}
+                                    {% if loop.index > ((info[part][row]['values'])|length /2) %}
+                                        <td>-{{ inrow }}</td><!-- outside net? -->
+                                    {% else %}
+                                        <td>{{ inrow }}</td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+
+    {% endfor %}
+    <div class="page" id="welcome">
+        <h1>Welcome</h1>
+        <p>This is the default content, click on any link on other navigation menu to see the information.</p>
+    </div>
+</div>
+</body>
+</html>
